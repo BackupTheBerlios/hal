@@ -26,11 +26,13 @@ import appia.xml.interfaces.InitializableSession;
 import appia.xml.utils.SessionProperties;
 
 /**
- * Client application. This application was built as a protocol. It creates the Game environment
- * (to the player) and exchanges messages with the game server.
+ * Client Communication session
+ * Implementation of the client communication layer
+ * Compliant with Appia XML initialization
+ * TODO Add user-born events support
+ * TODO Dynamic link quality assessment *PRIORITY*
  * 
- * 
- * @author Jose Real , Miguel Raposo, Leonel Duarte
+ * @author Jose Real
  */
 
 
@@ -55,7 +57,7 @@ public class HalClientCommSession extends Session implements InitializableSessio
 	
 	/**
 	 * Main event handler.
-	 * @param ev evento de entrada
+	 * @param ev entry event
 	 */
 	public void handle(Event ev) {
 		
@@ -82,7 +84,7 @@ public class HalClientCommSession extends Session implements InitializableSessio
 	
 	
 	/**
-	 * Metodo de inicializacao do canal
+	 * Handles Appia channel initialization
 	 * @param init
 	 */
 	private void handleChannelInit(ChannelInit init) {
@@ -107,7 +109,7 @@ public class HalClientCommSession extends Session implements InitializableSessio
 	/**
 	 * Initialization method used by Appia XML support to fill the parameters
 	 * used in this session.
-	 * @param params parametros de entrada
+	 * @param params entry params
 	 * 
 	 */
 	public void init(SessionProperties params) {
@@ -140,12 +142,23 @@ public class HalClientCommSession extends Session implements InitializableSessio
 		}
 	}
 	
+	/**
+	 * Handles network bound events, re-routes to user or server/peer accordingly
+	 * @param ev network event
+	 */
+	
 	public void handleNetwork(UdpNetworkEvent ev){
 		if(ev.source.equals(user))
 			DEBUG.print("Message from user");
 		else if (ev.source.equals(server))
 			DEBUG.print("Message from Server");
 	}
+	
+	/**
+	 * Handles socket registration - Begin server handshake *HARDCODED*
+	 * TODO Receive user event to begin handShake - replace legacy code
+	 * @param event socket registration event
+	 */
 	
 	public void handleRSE(RegisterSocketEvent event){
 		
@@ -165,6 +178,11 @@ public class HalClientCommSession extends Session implements InitializableSessio
 		}
 	}
 	
+	/**
+	 * Handles reply from handShake Event from server
+	 * @param event HandShake receipt event
+	 */
+	
 	public void handleShake(HandShakeEvent event){
 		try{
 			DEBUG.print("Hand-Shake complete");
@@ -177,6 +195,11 @@ public class HalClientCommSession extends Session implements InitializableSessio
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Receives link test receipt event
+	 * @param ev link test event
+	 */
 	
 	public void handleLink(LinkQualityEvent ev){
 		postPing=Calendar.getInstance().getTimeInMillis();

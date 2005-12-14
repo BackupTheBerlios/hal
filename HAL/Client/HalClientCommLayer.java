@@ -12,7 +12,12 @@ import appia.events.channel.ChannelInit;
 import appia.protocols.common.RegisterSocketEvent;
 
 /**
- * @author nuno
+ * Client communication layer for the High Availability Link middleware
+ * As of this momento, the communication layer routes incoming user data
+ * into the server, and retrieves data from it and re-routes it to the 
+ * user.
+ * 
+ * @author Jose Real
  */
 public class HalClientCommLayer extends Layer {
 

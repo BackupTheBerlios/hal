@@ -20,7 +20,7 @@ import appia.xml.interfaces.InitializableSession;
 import appia.xml.utils.SessionProperties;
 
 /**
- * Appia session that implements the Pong server.
+ * Appia session that implements the HAL Server.
  * 
  * @author tfd008 Jose Corte-Real, Miguel Figueiredo, Leonel Duarte
  */
@@ -34,9 +34,9 @@ public class HalServerCommSession extends Session implements InitializableSessio
 
 	
 	/**
-	 * Constructs a PongServerSession object.
+	 * Constructs a HALServerSession object.
 	 * 
-	 * @param layer the PongServerLayer instance associated with this session.
+	 * @param layer the HALServerLayer instance associated with this session.
 	 */
 	public HalServerCommSession(Layer layer) {
 		super(layer);
@@ -45,7 +45,7 @@ public class HalServerCommSession extends Session implements InitializableSessio
 	/**
 	 * Initialization method used by Appia XML support to fill the parameters
 	 * used in this session.
-	 * @param params parametros de entrada
+	 * @param params entry params
 	 * 
 	 */
 	public void init(SessionProperties params) {
@@ -73,7 +73,7 @@ public class HalServerCommSession extends Session implements InitializableSessio
 	
 	/**
 	 * Generic handle for all events accepted by this session.
-	 * @param event evento de entrada
+	 * @param event entry event
 	 */
 	public void handle(Event event) {
 		
@@ -102,8 +102,7 @@ public class HalServerCommSession extends Session implements InitializableSessio
 	 * Handler for the ChannelInit event.
 	 * 
 	 * This event is received only once when the channel is created. It tries to register
-	 * the socket in the underlying execution environment (OS) and starts the the periodic
-	 * timer that drives the ball movement.
+	 * the socket in the underlying execution environment (OS) 
 	 * 
 	 * @param init the ChannelInit event received in this session.
 	 */
@@ -144,6 +143,11 @@ public class HalServerCommSession extends Session implements InitializableSessio
 		}
 	}
 	
+	/**
+	 * Handles HandShakeEvent 
+	 * @param event handshake event
+	 */
+	
 	public void handleShake(HandShakeEvent event){
 		try{
 		clients.put(serial,(InetWithPort)event.source);
@@ -157,11 +161,16 @@ public class HalServerCommSession extends Session implements InitializableSessio
 		}
 	}
 	
+	/**
+	 * Handles a link quality assessment event
+	 * @param event link event
+	 */
+	
 	public void handleLink(LinkQualityEvent event){
 		try{
 			LinkQualityEvent reply = new LinkQualityEvent(mainChannel,Direction.DOWN,this);
 			reply.dest=event.source;
-			Thread.sleep(100);
+			//Thread.sleep(100);
 			reply.go();
 			
 		}

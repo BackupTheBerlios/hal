@@ -1,6 +1,3 @@
-/*
- * Created on 15-Sep-2003
- */
 package Client;
 
 import Events.HandShakeEvent;
@@ -11,17 +8,9 @@ import appia.Session;
 import appia.events.channel.ChannelInit;
 import appia.protocols.common.RegisterSocketEvent;
 
-/**
- * Client communication layer for the High Availability Link middleware
- * As of this momento, the communication layer routes incoming user data
- * into the server, and retrieves data from it and re-routes it to the 
- * user.
- * 
- * @author Jose Real
- */
-public class HalClientCommLayer extends Layer {
+public class ClientLinkLayer extends Layer {
 
-	public HalClientCommLayer(){
+	public ClientLinkLayer(){
 		super();
 		
 		/*
@@ -43,7 +32,7 @@ public class HalClientCommLayer extends Layer {
 				ChannelInit.class,
 				RegisterSocketEvent.class,
 				UdpNetworkEvent.class,
-				HandShakeEvent.class,
+				LinkQualityEvent.class,
 		};
 		
 		/*
@@ -54,7 +43,7 @@ public class HalClientCommLayer extends Layer {
 		evProvide = new Class[]{
 				RegisterSocketEvent.class,
 				UdpNetworkEvent.class,
-				HandShakeEvent.class,
+				LinkQualityEvent.class,
 		};
 	}
 
@@ -63,7 +52,10 @@ public class HalClientCommLayer extends Layer {
 	 * @return the created session.
 	 */
 	public Session createSession() {
-		return new HalClientCommSession(this);
+		return new ClientLinkSession(this);
 	}
 
 }
+
+
+

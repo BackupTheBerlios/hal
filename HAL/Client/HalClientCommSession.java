@@ -38,13 +38,12 @@ import appia.xml.utils.SessionProperties;
 
 
 public class HalClientCommSession extends Session implements InitializableSession
-
 {
-	private long prePing,postPing;
+
 	private Channel mainChannel = null;
 	private InetWithPort user,server,local;
 	private Vector<InetWithPort> peers;
-	private long link = -1;
+
 	
 	/**
 	 * Main class constructor.
@@ -70,8 +69,7 @@ public class HalClientCommSession extends Session implements InitializableSessio
 			handleRSE((RegisterSocketEvent)ev);
 		else if (ev instanceof HandShakeEvent)
 			handleShake((HandShakeEvent)ev);
-		else if (ev instanceof LinkQualityEvent)
-			handleLink((LinkQualityEvent)ev);
+
 		
 		else
 			// unexpected event. Forwarding it.
@@ -186,24 +184,12 @@ public class HalClientCommSession extends Session implements InitializableSessio
 	public void handleShake(HandShakeEvent event){
 		try{
 			DEBUG.print("Hand-Shake complete");
-			LinkQualityEvent ping = new LinkQualityEvent(mainChannel,Direction.DOWN,this);
-			ping.dest=server;
-			ping.go();
-			prePing=Calendar.getInstance().getTimeInMillis();
+			
 		}
 		catch(Exception e){
 			e.printStackTrace();
 		}
 	}
-	
-	/**
-	 * Receives link test receipt event
-	 * @param ev link test event
-	 */
-	
-	public void handleLink(LinkQualityEvent ev){
-		postPing=Calendar.getInstance().getTimeInMillis();
-		DEBUG.print("Link latency to server "+(postPing-prePing));
-	}
+
 	
 }

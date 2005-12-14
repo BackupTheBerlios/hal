@@ -1,6 +1,8 @@
 package Stubs;
 
 
+import Client.ClientLinkLayer;
+import Client.ClientLinkSession;
 import Client.HalClientCommLayer;
 import Client.HalClientCommSession;
 import appia.Appia;
@@ -38,6 +40,7 @@ public class RunClient {
 		 */
 		Layer[] mainQos = {
 				new UdpSimpleLayer(), // Camada de comunicacao UDP
+				new ClientLinkLayer(),
 				new HalClientCommLayer(), //Camada Hal
 		}; 
 
@@ -61,7 +64,7 @@ public class RunClient {
 		Channel mainChannel = myMainQoS.createUnboundChannel("HAL");
 		
 		HalClientCommSession session = (HalClientCommSession) mainQos[mainQos.length-1].createSession();
-		
+		ClientLinkSession link = (ClientLinkSession) mainQos[mainQos.length-2].createSession();
 		/*
 		 * Arguments are passed here.
 		 */		
@@ -72,6 +75,7 @@ public class RunClient {
 		params.put("userHost",new String(userHost));
 		params.put("userPort",new Integer(userPort).toString());
 		session.init(params);
+		link.init(params);
 
 		/*
 		 * We must use a cursor to instanciate sessions in the channel.
@@ -86,6 +90,8 @@ public class RunClient {
 
 		try {	
 			cc.setSession(session);
+			cc.down();
+			cc.setSession(link);
 		} 
 		catch (AppiaCursorException e3) {
 			e3.printStackTrace();

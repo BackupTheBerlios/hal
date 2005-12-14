@@ -4,12 +4,13 @@ import java.net.InetAddress;
 import java.util.Calendar;
 
 import Events.LinkQualityEvent;
-import Events.LinkTimerEvent;
+import Events.LinkTimer;
 import Utilities.DEBUG;
 import appia.AppiaEventException;
 import appia.Channel;
 import appia.Direction;
 import appia.Event;
+import appia.EventQualifier;
 import appia.Layer;
 import appia.Session;
 import appia.events.channel.ChannelInit;
@@ -20,9 +21,17 @@ import appia.xml.utils.SessionProperties;
 public class ClientLinkSession extends Session implements InitializableSession
 
 {
+	/**
+	 *  HAL timer timeout
+	 */
+	private static final int HAL_TIMER_TIMEOUT = 4000;
+	
+	private static final int LATENCY_ERROR_MARGIN = 100;
+	
 	private long prePing,postPing;
 	private Channel mainChannel;
 	private InetWithPort server;
+	private long link;
 	
 	/**
 	 * Main class constructor.
@@ -44,6 +53,8 @@ public class ClientLinkSession extends Session implements InitializableSession
 			handleChannelInit((ChannelInit) ev);
 		else if (ev instanceof LinkQualityEvent)
 			handleLink((LinkQualityEvent)ev);
+		else if (ev instanceof LinkTimer)
+			handleLinkTimer((LinkTimer)ev);
 		
 		else
 			// unexpected event. Forwarding it.
@@ -80,7 +91,8 @@ public class ClientLinkSession extends Session implements InitializableSession
 
 	public void handleLink(LinkQualityEvent ev){
 		postPing=Calendar.getInstance().getTimeInMillis();
-		DEBUG.print("Link latency to server "+(postPing-prePing));
+		setLink((postPing-prePing));
+		DEBUG.print("Link latency to server "+link);
 	}
 	
 	/**
@@ -91,18 +103,37 @@ public class ClientLinkSession extends Session implements InitializableSession
 		
 		try {
 			mainChannel = init.getChannel();
-			LinkQualityEvent ping = new LinkQualityEvent(mainChannel,Direction.DOWN,this);
-			ping.dest=server;
-			ping.go();
-			prePing=Calendar.getInstance().getTimeInMillis();
+			
+			try {
+				LinkTimer timer = new LinkTimer(HAL_TIMER_TIMEOUT,mainChannel,this,EventQualifier.ON);
+				timer.go();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			
 			init.go();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}	
 	}
 	
-	private void handleLinkTimer(LinkTimerEvent event){
-		
+	private void handleLinkTimer(LinkTimer event){
+		try{
+			LinkQualityEvent ping = new LinkQualityEvent(mainChannel,Direction.DOWN,this);
+			ping.dest=server;
+			ping.go();
+			prePing=Calendar.getInstance().getTimeInMillis();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
+	
+	public void setLink(long in){
+
+			if(Math.abs(in-link) <= LATENCY_ERROR_MARGIN)
+				link = (link+in)/2;
+		}
 	
 }

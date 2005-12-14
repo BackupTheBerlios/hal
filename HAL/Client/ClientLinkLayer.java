@@ -1,7 +1,7 @@
 package Client;
 
-import Events.HandShakeEvent;
 import Events.LinkQualityEvent;
+import Events.LinkTimer;
 import Events.UdpNetworkEvent;
 import appia.Layer;
 import appia.Session;
@@ -33,6 +33,7 @@ public class ClientLinkLayer extends Layer {
 				RegisterSocketEvent.class,
 				UdpNetworkEvent.class,
 				LinkQualityEvent.class,
+				LinkTimer.class,
 		};
 		
 		/*
@@ -44,6 +45,7 @@ public class ClientLinkLayer extends Layer {
 				RegisterSocketEvent.class,
 				UdpNetworkEvent.class,
 				LinkQualityEvent.class,
+				LinkTimer.class,
 		};
 	}
 

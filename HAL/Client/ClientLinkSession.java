@@ -18,6 +18,31 @@ import appia.protocols.common.InetWithPort;
 import appia.xml.interfaces.InitializableSession;
 import appia.xml.utils.SessionProperties;
 
+/**
+ * HAL Link assessment layer
+ * 
+ * The main logic behind per-zone client groups is, that typically a MMO concerns itself with updating
+ * the FOV of a certain player, out-of-range changes are of no concern to him, and thus, should not 
+ * increase the burden of communication. As such, it would be optimal to create the link adaptation 
+ * behind this very concept - (in-game peer position) - where a number of communication optimizations
+ * could take place (e.g. server sends one state to designated peer, that peer 'multicasts' to the
+ * remainder of the peers in his designated zone, therefor decreasing server load and potentially
+ * improving client latency if latency to designated peer is lesser than the latency to the server).
+ * As of this moment , this layer needs access to a 3 coordinate value representing the client's 
+ * in-game location - While this seems esoterical , the primary algorithm is based on in-game
+ * peer-proximity, so user data must accomodate to this requirement. Due to diferent languages constraints
+ * An optimal solution for this matter is still being formulated.
+ * 
+ * *UPDATE* An alternative would be that the HAL server alone needs to know player locations, but a 
+ * similar problem persists.
+ * 
+ * *CURRENT IMPLEMENTATION* As of this moment, no in-game position is being considered , server broadcast
+ * Low Ping peers to peers with high latencies - This algorithm is now named SR (Selective Re-Routing)
+ * 
+ * @author Jose Real
+ *
+ */
+
 public class ClientLinkSession extends Session implements InitializableSession
 
 {
@@ -26,12 +51,15 @@ public class ClientLinkSession extends Session implements InitializableSession
 	 */
 	private static final int HAL_TIMER_TIMEOUT = 4000;
 	
-	private static final int LATENCY_ERROR_MARGIN = 100;
+	private static final long LOWPING = 200;
+	
+	private static final int LATENCY_ERROR_MARGIN = 1000;
 	
 	private long prePing,postPing;
 	private Channel mainChannel;
 	private InetWithPort server;
-	private long link;
+	private long link=-1;
+	private static boolean LP = false;
 	
 	/**
 	 * Main class constructor.
@@ -131,9 +159,25 @@ public class ClientLinkSession extends Session implements InitializableSession
 	}
 	
 	public void setLink(long in){
-
-			if(Math.abs(in-link) <= LATENCY_ERROR_MARGIN)
+		
+		if(link!=-1){
+			if(Math.abs(in-link) <= LATENCY_ERROR_MARGIN){
+				DEBUG.printAnoying("Link update within error margin - updating");
 				link = (link+in)/2;
+			}
+			else{
+				DEBUG.printAnoying("Discarding value");
+			}
+		}
+		else{
+			link=in;
+		}
+		
+		if(link <= LOWPING)
+			LP=true;
+		else
+			LP=false;
+		
 		}
 	
 }

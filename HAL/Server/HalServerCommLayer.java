@@ -3,6 +3,7 @@ package Server;
 import Events.HandShakeEvent;
 import Events.LinkQualityEvent;
 import Events.UdpNetworkEvent;
+import Events.UpdatePeerStatusEvent;
 import appia.Layer;
 import appia.Session;
 import appia.events.channel.ChannelInit;
@@ -46,6 +47,7 @@ public class HalServerCommLayer extends Layer {
 			UdpNetworkEvent.class,
 			HandShakeEvent.class,
 			LinkQualityEvent.class,
+			UpdatePeerStatusEvent.class,
 		};
 	}
 

@@ -43,7 +43,7 @@ public class HalClientCommSession extends Session implements InitializableSessio
 	private Channel mainChannel = null;
 	private InetWithPort user,server,local;
 	private Vector<InetWithPort> peers;
-
+	private long serial=-1;
 	
 	/**
 	 * Main class constructor.
@@ -183,7 +183,8 @@ public class HalClientCommSession extends Session implements InitializableSessio
 	
 	public void handleShake(HandShakeEvent event){
 		try{
-			DEBUG.print("Hand-Shake complete");
+			serial = event.getMessage().peekLong();
+			DEBUG.print("Hand-Shake complete - Serial num "+serial);
 			
 		}
 		catch(Exception e){

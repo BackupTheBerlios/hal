@@ -3,8 +3,10 @@ package Client;
 import java.net.InetAddress;
 import java.util.Calendar;
 
+import Events.HandShakeEvent;
 import Events.LinkQualityEvent;
 import Events.LinkTimer;
+import Events.UpdatePeerStatusEvent;
 import Utilities.DEBUG;
 import appia.AppiaEventException;
 import appia.Channel;
@@ -60,6 +62,7 @@ public class ClientLinkSession extends Session implements InitializableSession
 	private InetWithPort server;
 	private long link=-1;
 	private static boolean LP = false;
+	private long serial=-1;
 	
 	/**
 	 * Main class constructor.
@@ -75,14 +78,15 @@ public class ClientLinkSession extends Session implements InitializableSession
 	 * @param ev evento de entrada
 	 */
 	public void handle(Event ev) {
-		
-		
+				
 		if (ev instanceof ChannelInit)
 			handleChannelInit((ChannelInit) ev);
 		else if (ev instanceof LinkQualityEvent)
 			handleLink((LinkQualityEvent)ev);
 		else if (ev instanceof LinkTimer)
 			handleLinkTimer((LinkTimer)ev);
+		else if (ev instanceof HandShakeEvent)
+			handleShake((HandShakeEvent)ev);
 		
 		else
 			// unexpected event. Forwarding it.
@@ -158,6 +162,39 @@ public class ClientLinkSession extends Session implements InitializableSession
 		}
 	}
 	
+	/**
+	 * Handles reply from handShake Event from server
+	 * @param event HandShake receipt event
+	 */
+	
+	public void handleShake(HandShakeEvent event){
+		if(event.getDir()==(Direction.UP)){
+			try{
+				serial = event.getMessage().peekLong();
+				event.go();
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		else{
+			try{
+				event.go();
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * Tests and Sets the new Link value
+	 * 
+	 *  The test portion of this method aims at ignoring outlier values to maintain some precision 
+	 *  in latency measurements.
+	 * @param in latency to server
+	 */
+	
 	public void setLink(long in){
 		
 		if(link!=-1){
@@ -175,9 +212,29 @@ public class ClientLinkSession extends Session implements InitializableSession
 		
 		if(link <= LOWPING)
 			LP=true;
+
 		else
 			LP=false;
 		
+		updateStatus();
 		}
+	
+	/**
+	 * Update peer status in central server - imperative to adaptation algorithm -
+	 *
+	 */
+	
+	public void updateStatus(){
+		try{
+			UpdatePeerStatusEvent update = new UpdatePeerStatusEvent(mainChannel,Direction.DOWN,this);
+			update.getMessage().pushBoolean(LP);
+			update.getMessage().pushLong(serial);
+			update.dest=server;
+			update.go();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 	
 }

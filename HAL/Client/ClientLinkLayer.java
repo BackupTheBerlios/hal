@@ -1,5 +1,6 @@
 package Client;
 
+import Events.HandShakeEvent;
 import Events.LinkQualityEvent;
 import Events.LinkTimer;
 import Events.UdpNetworkEvent;
@@ -34,6 +35,7 @@ public class ClientLinkLayer extends Layer {
 				UdpNetworkEvent.class,
 				LinkQualityEvent.class,
 				LinkTimer.class,
+				HandShakeEvent.class,
 		};
 		
 		/*
@@ -46,6 +48,7 @@ public class ClientLinkLayer extends Layer {
 				UdpNetworkEvent.class,
 				LinkQualityEvent.class,
 				LinkTimer.class,
+				HandShakeEvent.class,
 		};
 	}
 

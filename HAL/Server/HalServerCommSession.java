@@ -6,7 +6,9 @@ import java.util.HashMap;
 import Events.HandShakeEvent;
 import Events.LinkQualityEvent;
 import Events.UdpNetworkEvent;
+import Events.UpdatePeerStatusEvent;
 import Utilities.DEBUG;
+import Utilities.PeerStatus;
 import appia.AppiaEventException;
 import appia.Channel;
 import appia.Direction;
@@ -14,6 +16,7 @@ import appia.Event;
 import appia.Layer;
 import appia.Session;
 import appia.events.channel.ChannelInit;
+import appia.message.Message;
 import appia.protocols.common.InetWithPort;
 import appia.protocols.common.RegisterSocketEvent;
 import appia.xml.interfaces.InitializableSession;
@@ -28,7 +31,7 @@ public class HalServerCommSession extends Session implements InitializableSessio
 	
 	private int port;
 	private InetWithPort local,user;
-	private HashMap<Long,InetWithPort> clients;
+	private HashMap<Long,PeerStatus> clients;
 	private Channel mainChannel;
 	private long serial = 0;
 
@@ -64,7 +67,7 @@ public class HalServerCommSession extends Session implements InitializableSessio
 		}
 		try{
 			user = new InetWithPort(InetAddress.getByName(userHost),userPort);
-			clients = new HashMap<Long,InetWithPort>();
+			clients = new HashMap<Long,PeerStatus>();
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -87,6 +90,8 @@ public class HalServerCommSession extends Session implements InitializableSessio
 			handleShake((HandShakeEvent)event);
 		else if (event instanceof LinkQualityEvent)
 			handleLink((LinkQualityEvent)event);
+		else if (event instanceof UpdatePeerStatusEvent)
+			handleUpdatePeerStatus((UpdatePeerStatusEvent)event);
 		
 		else
 			try {
@@ -149,12 +154,18 @@ public class HalServerCommSession extends Session implements InitializableSessio
 	 */
 	
 	public void handleShake(HandShakeEvent event){
+		
 		try{
-		clients.put(serial,(InetWithPort)event.source);
+			
+		clients.put(serial,new PeerStatus(false,(InetWithPort)event.source));
 		DEBUG.print("New User logged-in from "+((InetWithPort)event.source).toString());
 		HandShakeEvent reply = new HandShakeEvent(mainChannel,Direction.DOWN,this);
+
+		reply.getMessage().pushLong(serial);
 		reply.dest=event.source;
 		reply.go();
+		serial++;
+		
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -170,7 +181,7 @@ public class HalServerCommSession extends Session implements InitializableSessio
 		try{
 			LinkQualityEvent reply = new LinkQualityEvent(mainChannel,Direction.DOWN,this);
 			reply.dest=event.source;
-			//Thread.sleep(100);
+			//Thread.sleep(99);
 			reply.go();
 			
 		}
@@ -178,4 +189,10 @@ public class HalServerCommSession extends Session implements InitializableSessio
 			e.printStackTrace();
 		}
 	}
+	
+	public void handleUpdatePeerStatus( UpdatePeerStatusEvent event){
+		DEBUG.print("serial "+event.getMessage().peekLong());
+		DEBUG.print(((PeerStatus)clients.get(event.getMessage().peekLong())).getAddr().toString());
+	}
+	
 }

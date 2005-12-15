@@ -8,6 +8,7 @@ import appia.events.SendableEvent;
 public class HandShakeEvent extends SendableEvent {
 
 	private Object encapsulatedDatagram;
+
 	
 	public HandShakeEvent(){
 		super();
@@ -15,6 +16,7 @@ public class HandShakeEvent extends SendableEvent {
 	
 	public HandShakeEvent(Channel channel, int dir, Session source) throws AppiaEventException {
 		super(channel, dir, source);
+
 	}
 	
 	public Object getPayload(){
@@ -25,4 +27,5 @@ public class HandShakeEvent extends SendableEvent {
 		encapsulatedDatagram=in;
 	}
 
+	
 }
